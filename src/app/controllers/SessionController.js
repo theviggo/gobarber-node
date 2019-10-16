@@ -1,11 +1,23 @@
+import * as Yup from 'yup';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import 'dotenv/config';
 import authConfig from '../../config/auth';
-import * as Yup from 'yup';
 
 class SessionController {
   async store(req, res) {
+    const schema = Yup.object().shape({
+      email: Yup.string()
+        .email()
+        .required(),
+      password: Yup.string()
+        .min(4)
+        .required(),
+    });
+
+    if (!(await schema.isValid(req.body)))
+      return res.status(401).json({ error: 'Validation fails' });
+
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
 
